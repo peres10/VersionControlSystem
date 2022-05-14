@@ -21,4 +21,8 @@ public abstract class AbstractUser implements User {
         return numberOfProjectsWorking;
     }
 
+    public int getClearanceLevel(){
+        return clearanceLevel;
+    }
+
 }

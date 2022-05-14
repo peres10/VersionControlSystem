@@ -1,9 +1,7 @@
 import vcs.*;
-import vcs.exceptions.UnknownJobPositionException;
-import vcs.exceptions.UserAlreadyExistsException;
-import vcs.userPositions.ProjectManagerClass;
-import vcs.userPositions.SoftwareDeveloper;
-import vcs.userPositions.SoftwareDeveloperClass;
+import vcs.exceptions.*;
+import vcs.userPositions.*;
+
 
 import java.util.*;
 
@@ -17,7 +15,8 @@ public class Main {
         NO_USERS("No users registered."),
         HEADER_USER_LIST("All registered users:"),
         USER_LIST_FORMAT_MANAGER("manager %s [%d, %d, %d]\n"),
-        USER_LIST_FORMAT_DEVELOPER("developer %s managed by %s [%d]\n");
+        USER_LIST_FORMAT_DEVELOPER("developer %s managed by %s [%d]\n"),
+        PROJECT_CREATED("%s project was created.");
 
 
         private final String msg;
@@ -34,7 +33,11 @@ public class Main {
     private enum Error {
         UNKNOWN_COMMAND("Unknown command %s. Type help to see available commands.\n"),
         UNKNOWN_JOB_POSITION("Unknown job position."),
-        USER_ALREADY_EXISTS("User %s already exists\n");
+        USER_ALREADY_EXISTS("User %s already exists.\n"),
+        UNKNOWN_PROJECT_TYPE("Unknown project type."),
+        PROJECT_MANAGER_DONT_EXISTS("Project manager %s does not exist."),
+        PROJECT_ALREADY_EXISTS("%s project already exists."),
+        PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM("Project manager %s has clearance level %d.");
 
         private final String msg;
 
@@ -103,6 +106,7 @@ public class Main {
                     usersCommand(vSystem);
                     break;
                 case CREATE:
+                    createProject(in, vSystem);
                     break;
                 case PROJECTS:
                     break;
@@ -175,6 +179,35 @@ public class Main {
                 if (user instanceof ProjectManagerClass)
                     System.out.printf(Feedback.USER_LIST_FORMAT_MANAGER.toString(), user.getName(), ((ProjectManagerClass) user).getNumOfDevelopers(), ((ProjectManagerClass) user).getNumOfProjectsAsManager(), user.getNumOfProjectsWorking());
             }
+        }
+    }
+
+    private static void createProject(Scanner in, VersionControlSystem vSystem){
+        String pmUsername = in.next().trim();
+        String typeOfProject = in.next().trim();
+        String projectName = in.nextLine().trim();
+        int numOfKeywords = in.nextInt();
+        ArrayList<String> keywords = new ArrayList<>();
+        for(int i=0;i<numOfKeywords;i++)
+            keywords.add(in.next().trim());
+        String nameOfCompanyOrConfidentialityLevel = in.next();
+        in.nextLine();
+
+        try{
+            vSystem.createProject(pmUsername,typeOfProject,projectName,keywords,nameOfCompanyOrConfidentialityLevel);
+            System.out.printf(Feedback.PROJECT_CREATED.toString(),projectName);
+        }
+        catch(ProjectTypeUnknownException e){
+            System.out.println(Error.UNKNOWN_PROJECT_TYPE.toString());
+        }
+        catch(UserNotExistException e){
+            System.out.printf(Error.PROJECT_MANAGER_DONT_EXISTS.toString(),pmUsername);
+        }
+        catch(ProjectNameAlreadyExistsException e){
+            System.out.printf(Error.PROJECT_ALREADY_EXISTS.toString(),projectName);
+        }
+        catch(ConfidetialityLevelHigherThanManagerException e){
+            System.out.printf(Error.PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM.toString(),pmUsername,e.getPMLevel());
         }
     }
 

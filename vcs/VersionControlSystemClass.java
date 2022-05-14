@@ -5,13 +5,12 @@ import vcs.exceptions.UserAlreadyExistsException;
 import vcs.userPositions.ProjectManagerClass;
 import vcs.userPositions.SoftwareDeveloperClass;
 
-import java.util.Iterator;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 public class VersionControlSystemClass implements VersionControlSystem {
 
     SortedMap<String, User> users;
+
 
     private enum Position {
         DEVELOPER("software developer"),
@@ -27,6 +26,12 @@ public class VersionControlSystemClass implements VersionControlSystem {
             return this.positionName;
         }
     }
+
+    private enum ProjectType {
+        INHOUSE,
+        OUTSOURCED;
+    }
+
 
     public VersionControlSystemClass() {
         users = new TreeMap<>();
@@ -59,5 +64,10 @@ public class VersionControlSystemClass implements VersionControlSystem {
     @Override
     public Iterator<User> listAllUsers() {
         return users.values().iterator();
+    }
+
+    @Override
+    public void createProject(String pmUsername, String typeOfProject, String projectName, ArrayList<String> keywords, String nameOfCompanyOrConfidentialityLevel) {
+
     }
 }
