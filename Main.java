@@ -1,6 +1,9 @@
 import vcs.*;
 import vcs.exceptions.UnknownJobPositionException;
 import vcs.exceptions.UserAlreadyExistsException;
+import vcs.userPositions.ProjectManagerClass;
+import vcs.userPositions.SoftwareDeveloper;
+import vcs.userPositions.SoftwareDeveloperClass;
 
 import java.util.*;
 
@@ -10,7 +13,12 @@ public class Main {
 
     private enum Feedback {
         EXIT_MSG("Bye!"),
-        USER_REGISTERED("User %s was registered as %s with clearance level %d.\n");
+        USER_REGISTERED("User %s was registered as %s with clearance level %d.\n"),
+        NO_USERS("No users registered."),
+        HEADER_USER_LIST("All registered users:"),
+        USER_LIST_FORMAT_MANAGER("manager %s [%d, %d, %d]\n"),
+        USER_LIST_FORMAT_DEVELOPER("developer %s managed by %s [%d]\n");
+
 
         private final String msg;
 
@@ -89,9 +97,10 @@ public class Main {
         while (!c.equals(Command.EXIT)) {
             switch (c) {
                 case REGISTER:
-                    registerCommand(in,vSystem);
+                    registerCommand(in, vSystem);
                     break;
                 case USERS:
+                    usersCommand(vSystem);
                     break;
                 case CREATE:
                     break;
@@ -117,7 +126,7 @@ public class Main {
                     helpCommand();
                     break;
                 case UNKNOWN:
-                    System.out.printf(Error.UNKNOWN_COMMAND.msg, comm);
+                    System.out.printf(Error.UNKNOWN_COMMAND.toString(), comm);
                     break;
                 default:
                     break;
@@ -125,7 +134,7 @@ public class Main {
             comm = in.next().toUpperCase();
             c = getCommand(comm);
         }
-        System.out.println(Feedback.EXIT_MSG.msg);
+        System.out.println(Feedback.EXIT_MSG.toString());
         in.close();
     }
 
@@ -144,12 +153,28 @@ public class Main {
         in.nextLine();
         try {
             String fullPositionName = vSystem.registerUser(jobPosition, name, clearanceLevel);
-            System.out.printf(Feedback.USER_REGISTERED.msg, name,fullPositionName, clearanceLevel);
+            System.out.printf(Feedback.USER_REGISTERED.toString(), name, fullPositionName, clearanceLevel);
         } catch (UnknownJobPositionException e) {
-            System.out.println(Error.UNKNOWN_JOB_POSITION.msg);
+            System.out.println(Error.UNKNOWN_JOB_POSITION.toString());
         } catch (UserAlreadyExistsException e) {
-            System.out.printf(Error.USER_ALREADY_EXISTS.msg,name);
+            System.out.printf(Error.USER_ALREADY_EXISTS.toString(), name);
 
+        }
+    }
+
+    private static void usersCommand(VersionControlSystem vSystem) {
+        Iterator<User> usersIt = vSystem.listAllUsers();
+        if (!usersIt.hasNext()) {
+            System.out.println(Feedback.NO_USERS.toString());
+        } else {
+            System.out.println(Feedback.HEADER_USER_LIST.toString());
+            while (usersIt.hasNext()) {
+                User user = usersIt.next();
+                if (user instanceof SoftwareDeveloperClass)
+                    System.out.printf(Feedback.USER_LIST_FORMAT_DEVELOPER.toString(), user.getName(), ((SoftwareDeveloperClass) user).getManagerName(), user.getNumOfProjectsWorking());
+                if (user instanceof ProjectManagerClass)
+                    System.out.printf(Feedback.USER_LIST_FORMAT_MANAGER.toString(), user.getName(), ((ProjectManagerClass) user).getNumOfDevelopers(), ((ProjectManagerClass) user).getNumOfProjectsAsManager(), user.getNumOfProjectsWorking());
+            }
         }
     }
 
