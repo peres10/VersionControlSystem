@@ -1,16 +1,19 @@
 package vcs;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class AbstractUser implements User {
     private String username;
     //private String jobPosition;
     private int clearanceLevel;
-    private int numberOfProjectsWorking;
+    List<Project> projectsWorking;
 
     protected AbstractUser(String username, int clearanceLevel) {
         this.username = username;
         //this.jobPosition = jobPosition;
         this.clearanceLevel = clearanceLevel;
-        this.numberOfProjectsWorking=0;
+        projectsWorking=new ArrayList<>();
     }
 
     public String getName(){
@@ -18,7 +21,7 @@ public abstract class AbstractUser implements User {
     }
 
     public int getNumOfProjectsWorking(){
-        return numberOfProjectsWorking;
+        return projectsWorking.size();
     }
 
     public int getClearanceLevel(){

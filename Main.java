@@ -1,5 +1,9 @@
 import vcs.*;
 import vcs.exceptions.*;
+import vcs.typesOfProjects.InhouseProject;
+import vcs.typesOfProjects.InhouseProjectClass;
+import vcs.typesOfProjects.OutsourcedProject;
+import vcs.typesOfProjects.OutsourcedProjectClass;
 import vcs.userPositions.*;
 
 
@@ -15,8 +19,12 @@ public class Main {
         NO_USERS("No users registered."),
         HEADER_USER_LIST("All registered users:"),
         USER_LIST_FORMAT_MANAGER("manager %s [%d, %d, %d]\n"),
-        USER_LIST_FORMAT_DEVELOPER("developer %s managed by %s [%d]\n"),
-        PROJECT_CREATED("%s project was created.");
+        USER_LIST_FORMAT_DEVELOPER("developer %s is managed by %s [%d]\n"),
+        PROJECT_CREATED("%s project was created.\n"),
+        NO_PROJECTS("No projects added."),
+        HEADER_PROJECTS_LIST("All projects:"),
+        PROJECT_LIST_FORMAT_INHOUSE("in-house %s is managed by %s [%d, %d, %d, %d]\n"),
+        PROJECT_LIST_FORMAT_OUTSOURCED("outsourced %s is managed by %s and developed by %s\n");
 
 
         private final String msg;
@@ -35,9 +43,9 @@ public class Main {
         UNKNOWN_JOB_POSITION("Unknown job position."),
         USER_ALREADY_EXISTS("User %s already exists.\n"),
         UNKNOWN_PROJECT_TYPE("Unknown project type."),
-        PROJECT_MANAGER_DONT_EXISTS("Project manager %s does not exist."),
-        PROJECT_ALREADY_EXISTS("%s project already exists."),
-        PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM("Project manager %s has clearance level %d.");
+        PROJECT_MANAGER_DONT_EXISTS("Project manager %s does not exist.\n"),
+        PROJECT_ALREADY_EXISTS("%s project already exists.\n"),
+        PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM("Project manager %s has clearance level %d.\n");
 
         private final String msg;
 
@@ -106,9 +114,10 @@ public class Main {
                     usersCommand(vSystem);
                     break;
                 case CREATE:
-                    createProject(in, vSystem);
+                    createCommand(in, vSystem);
                     break;
                 case PROJECTS:
+                    projectsCommand(vSystem);
                     break;
                 case TEAM:
                     break;
@@ -153,16 +162,20 @@ public class Main {
     private static void registerCommand(Scanner in, VersionControlSystem vSystem) {
         String jobPosition = in.next().trim();
         String name = in.next().trim();
+        String pManagerName = null;
+        if (jobPosition.equals("developer"))
+            pManagerName = in.next().trim();
         int clearanceLevel = in.nextInt();
         in.nextLine();
         try {
-            String fullPositionName = vSystem.registerUser(jobPosition, name, clearanceLevel);
+            String fullPositionName = vSystem.registerUser(jobPosition, name, clearanceLevel, pManagerName);
             System.out.printf(Feedback.USER_REGISTERED.toString(), name, fullPositionName, clearanceLevel);
         } catch (UnknownJobPositionException e) {
             System.out.println(Error.UNKNOWN_JOB_POSITION.toString());
         } catch (UserAlreadyExistsException e) {
             System.out.printf(Error.USER_ALREADY_EXISTS.toString(), name);
-
+        } catch (ProjectManagerNotExistException e) {
+            System.out.printf(Error.PROJECT_MANAGER_DONT_EXISTS.toString(), pManagerName);
         }
     }
 
@@ -182,32 +195,47 @@ public class Main {
         }
     }
 
-    private static void createProject(Scanner in, VersionControlSystem vSystem){
+    private static void createCommand(Scanner in, VersionControlSystem vSystem) {
         String pmUsername = in.next().trim();
         String typeOfProject = in.next().trim();
         String projectName = in.nextLine().trim();
         int numOfKeywords = in.nextInt();
-        ArrayList<String> keywords = new ArrayList<>();
-        for(int i=0;i<numOfKeywords;i++)
+        Set<String> keywords = new HashSet<>();
+        for (int i = 0; i < numOfKeywords; i++)
             keywords.add(in.next().trim());
         String nameOfCompanyOrConfidentialityLevel = in.next();
         in.nextLine();
 
-        try{
-            vSystem.createProject(pmUsername,typeOfProject,projectName,keywords,nameOfCompanyOrConfidentialityLevel);
-            System.out.printf(Feedback.PROJECT_CREATED.toString(),projectName);
-        }
-        catch(ProjectTypeUnknownException e){
+        try {
+            vSystem.createProject(pmUsername, typeOfProject, projectName, keywords, nameOfCompanyOrConfidentialityLevel);
+            System.out.printf(Feedback.PROJECT_CREATED.toString(), projectName);
+        } catch (ProjectTypeUnknownException e) {
             System.out.println(Error.UNKNOWN_PROJECT_TYPE.toString());
+        } catch (ProjectManagerNotExistException e) {
+            System.out.printf(Error.PROJECT_MANAGER_DONT_EXISTS.toString(), pmUsername);
+        } catch (ProjectNameAlreadyExistsException e) {
+            System.out.printf(Error.PROJECT_ALREADY_EXISTS.toString(), projectName);
+        } catch (ConfidetialityLevelHigherThanManagerException e) {
+            System.out.printf(Error.PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM.toString(), pmUsername, e.getPMLevel());
         }
-        catch(UserNotExistException e){
-            System.out.printf(Error.PROJECT_MANAGER_DONT_EXISTS.toString(),pmUsername);
-        }
-        catch(ProjectNameAlreadyExistsException e){
-            System.out.printf(Error.PROJECT_ALREADY_EXISTS.toString(),projectName);
-        }
-        catch(ConfidetialityLevelHigherThanManagerException e){
-            System.out.printf(Error.PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM.toString(),pmUsername,e.getPMLevel());
+    }
+
+    private static void projectsCommand(VersionControlSystem vSystem) {
+        Iterator<Project> projectsIT = vSystem.listAllProjects();
+        if (!projectsIT.hasNext()) {
+            System.out.println(Feedback.NO_PROJECTS.toString());
+        } else {
+            System.out.println(Feedback.HEADER_PROJECTS_LIST.toString());
+            while (projectsIT.hasNext()) {
+                Project project = projectsIT.next();
+                if (project instanceof InhouseProjectClass) {
+                    InhouseProject projectIH = (InhouseProject) project;
+                    System.out.printf(Feedback.PROJECT_LIST_FORMAT_INHOUSE.toString(), projectIH.getName(), projectIH.getManagerName(), projectIH.getLevel(), projectIH.getNumOfMembers(),projectIH.getNumOfArtefacts(), projectIH.getNumOfRevisions());
+                } else if (project instanceof OutsourcedProjectClass) {
+                    OutsourcedProject projectOS = (OutsourcedProject) project;
+                    System.out.printf(Feedback.PROJECT_LIST_FORMAT_OUTSOURCED.toString(), projectOS.getName(), projectOS.getManagerName(), projectOS.getCompanyName());
+                }
+            }
         }
     }
 
