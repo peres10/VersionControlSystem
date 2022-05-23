@@ -6,8 +6,7 @@ import vcs.User;
 public interface ProjectManager extends User {
     int getNumOfDevelopers();
     int getNumOfProjectsAsManager();
-    void addDeveloperToManager(SoftwareDeveloper developer);
     void addManagingProject(Project project);
-
-
+    void addDeveloperToManager(SoftwareDeveloper developer);
+    boolean managesDeveloper(SoftwareDeveloper developer);
 }

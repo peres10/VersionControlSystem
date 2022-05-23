@@ -2,6 +2,7 @@ package vcs.userPositions;
 
 import vcs.AbstractUser;
 import vcs.Project;
+import vcs.typesOfProjects.InhouseProject;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -22,6 +23,13 @@ public class ProjectManagerClass extends AbstractUser implements ProjectManager 
 
     @Override
     public int getNumOfDevelopers() {
+        /*int total=0;
+        for(Project p : projectsAsManager){
+            if(p instanceof InhouseProject)
+                total+=((InhouseProject)p).getNumOfMembers();
+        }
+
+        return total;*/
         return developersManaged.size();
     }
 
@@ -30,6 +38,10 @@ public class ProjectManagerClass extends AbstractUser implements ProjectManager 
         return projectsAsManager.size();
     }
 
+    @Override
+    public void addManagingProject(Project project) {
+        projectsAsManager.add(project);
+    }
 
     @Override
     public void addDeveloperToManager(SoftwareDeveloper developer) {
@@ -37,7 +49,7 @@ public class ProjectManagerClass extends AbstractUser implements ProjectManager 
     }
 
     @Override
-    public void addManagingProject(Project project) {
-        projectsAsManager.add(project);
+    public boolean managesDeveloper(SoftwareDeveloper developer){
+        return developersManaged.contains(developer);
     }
 }

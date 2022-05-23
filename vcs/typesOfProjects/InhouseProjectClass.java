@@ -1,17 +1,22 @@
 package vcs.typesOfProjects;
 
 import vcs.AbstractProject;
+import vcs.User;
 import vcs.userPositions.ProjectManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class InhouseProjectClass extends AbstractProject implements InhouseProject {
 
     int confidentialityLevel;
+    List<User> members;
 
     public InhouseProjectClass(String name, ProjectManager pm, Set<String> keywords, int confidentialityLevel) {
         super(name, pm, keywords, "inhouse");
         this.confidentialityLevel =confidentialityLevel;
+        members = new ArrayList<>();
     }
 
     @Override
@@ -31,6 +36,16 @@ public class InhouseProjectClass extends AbstractProject implements InhouseProje
 
     @Override
     public int getNumOfMembers() {
-        return 0;
+        return members.size();
+    }
+
+    @Override
+    public boolean hasMember(User user) {
+        return members.contains(user);
+    }
+
+    @Override
+    public void addTeamMember(User user) {
+        members.add(user);
     }
 }

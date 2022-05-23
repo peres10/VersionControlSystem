@@ -11,18 +11,8 @@ public class VersionControlSystemClass implements VersionControlSystem {
     Map<String, Project> projects;
 
     private enum Position {
-        DEVELOPER("software developer"),
-        MANAGER("project manager");
-
-        private final String positionName;
-
-        Position(String positionName) {
-            this.positionName = positionName;
-        }
-
-        public String toString() {
-            return this.positionName;
-        }
+        DEVELOPER,
+        MANAGER;
     }
 
     private enum ProjectType {
@@ -61,7 +51,7 @@ public class VersionControlSystemClass implements VersionControlSystem {
                 break;
             }
         }
-        return pos.toString();
+        return pos.name().toLowerCase();
     }
 
     @Override
@@ -96,6 +86,29 @@ public class VersionControlSystemClass implements VersionControlSystem {
     @Override
     public Iterator<Project> listAllProjects() {
         return projects.values().iterator();
+    }
+
+    @Override
+    public void checkProject(String projectName, String pmUsername) throws ProjectManagerNotExistException, ProjectNameNotExistException, ProjectManagedByOtherUserException {
+        if(!users.containsKey(pmUsername) || !((users.get(pmUsername) instanceof ProjectManager)))
+            throw new ProjectManagerNotExistException();
+        if(!projects.containsKey(projectName) || (!(projects.get(projectName) instanceof InhouseProject)))
+            throw new ProjectNameNotExistException();
+        if(!projects.get(projectName).getManagerName().equals(pmUsername))
+            throw new ProjectManagedByOtherUserException(projects.get(projectName).getManagerName());
+    }
+
+    @Override
+    public String addMemberToTeam(String projectName, String user) {
+        if(!users.containsKey(user))
+            return("does not exist");
+        if(users.get(user).getClearanceLevel()<((InhouseProject)projects.get(projectName)).getLevel())
+            return("insufficient clearance level");
+        if(((InhouseProject)projects.get(projectName)).hasMember(users.get(user)) || user.equals(projects.get(projectName).getManagerName()))
+            return("already a member");
+        ((InhouseProject)projects.get(projectName)).addTeamMember(users.get(user));
+        users.get(user).addProject(projects.get(projectName));
+        return ("added to the team");
     }
 
 

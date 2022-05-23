@@ -6,4 +6,6 @@ public interface User {
     int getNumOfProjectsWorking();
 
     int getClearanceLevel();
+
+    void addProject(Project project);
 }

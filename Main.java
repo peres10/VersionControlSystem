@@ -15,6 +15,7 @@ public class Main {
 
     private enum Feedback {
         EXIT_MSG("Bye!"),
+        HEADER_COMMANDS("Available commands:"),
         USER_REGISTERED("User %s was registered as %s with clearance level %d.\n"),
         NO_USERS("No users registered."),
         HEADER_USER_LIST("All registered users:"),
@@ -24,7 +25,9 @@ public class Main {
         NO_PROJECTS("No projects added."),
         HEADER_PROJECTS_LIST("All projects:"),
         PROJECT_LIST_FORMAT_INHOUSE("in-house %s is managed by %s [%d, %d, %d, %d]\n"),
-        PROJECT_LIST_FORMAT_OUTSOURCED("outsourced %s is managed by %s and developed by %s\n");
+        PROJECT_LIST_FORMAT_OUTSOURCED("outsourced %s is managed by %s and developed by %s\n"),
+        HEADER_ADD_TEAM("Latest team members:"),
+        ADD_TO_TEAM_FORMAT("%s: %s.\n");
 
 
         private final String msg;
@@ -39,13 +42,15 @@ public class Main {
     }
 
     private enum Error {
-        UNKNOWN_COMMAND("Unknown command %s. Type help to see available commands.\n"),
+        UNKNOWN_COMMAND("Unknown command. Type help to see available commands.\n"),
         UNKNOWN_JOB_POSITION("Unknown job position."),
         USER_ALREADY_EXISTS("User %s already exists.\n"),
         UNKNOWN_PROJECT_TYPE("Unknown project type."),
         PROJECT_MANAGER_DONT_EXISTS("Project manager %s does not exist.\n"),
         PROJECT_ALREADY_EXISTS("%s project already exists.\n"),
-        PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM("Project manager %s has clearance level %d.\n");
+        PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM("Project manager %s has clearance level %d.\n"),
+        PROJECT_DONT_EXIST("%s project does not exist.\n"),
+        PROJECT_MANAGED_BY_OTHER_USER("%s is managed by %s.\n");
 
         private final String msg;
 
@@ -64,10 +69,11 @@ public class Main {
         USERS("lists all registered users"),
         CREATE("creates a new project"),
         PROJECTS("lists all projects"),
-        TEAM(" adds team members to a project"),
+        TEAM("adds team members to a project"),
         ARTEFACTS("adds artefacts to a project"),
+        PROJECT("shows detailed project information"),
         REVISION("revises an artefact"),
-        MANAGED("lists developers of a manager"),
+        MANAGES("lists developers of a manager"),
         KEYWORD("filters projects by keyword"),
         CONFIDENTIALITY("filters projects by confidentiality level"),
         WORKAHOLICS("top 3 employees with more artefacts updates"),
@@ -120,12 +126,15 @@ public class Main {
                     projectsCommand(vSystem);
                     break;
                 case TEAM:
+                    teamCommand(in,vSystem);
                     break;
                 case ARTEFACTS:
                     break;
+                case PROJECT:
+                    break;
                 case REVISION:
                     break;
-                case MANAGED:
+                case MANAGES:
                     break;
                 case KEYWORD:
                     break;
@@ -139,7 +148,7 @@ public class Main {
                     helpCommand();
                     break;
                 case UNKNOWN:
-                    System.out.printf(Error.UNKNOWN_COMMAND.toString(), comm);
+                    System.out.printf(Error.UNKNOWN_COMMAND.toString());
                     break;
                 default:
                     break;
@@ -152,6 +161,7 @@ public class Main {
     }
 
     private static void helpCommand() {
+        System.out.println(Feedback.HEADER_COMMANDS.toString());
         for (Command cmd : Command.values()) {
             if (cmd == Command.UNKNOWN)
                 return;
@@ -237,6 +247,34 @@ public class Main {
                 }
             }
         }
+    }
+
+    private static void teamCommand(Scanner in,VersionControlSystem vSystem){
+        String pmUsername = in.next();
+        String projectName = in.nextLine().trim();
+        int numOfUsersToAdd = in.nextInt();
+        List<String> usernames = new ArrayList<>();
+        while(usernames.size()<numOfUsersToAdd){
+            usernames.add(in.next().trim());
+        }
+        in.nextLine();
+        try {
+            vSystem.checkProject(projectName,pmUsername);
+            System.out.println(Feedback.HEADER_ADD_TEAM.toString());
+            for(String user : usernames) {
+                System.out.printf(Feedback.ADD_TO_TEAM_FORMAT.toString(),user,vSystem.addMemberToTeam(projectName,user));
+            }
+        }
+        catch(ProjectManagerNotExistException e){
+            System.out.printf(Error.PROJECT_MANAGER_DONT_EXISTS.toString(),pmUsername);
+        }
+        catch(ProjectNameNotExistException e){
+            System.out.printf(Error.PROJECT_DONT_EXIST.toString(),projectName);
+        }
+        catch(ProjectManagedByOtherUserException e){
+            System.out.printf(Error.PROJECT_MANAGED_BY_OTHER_USER.toString(),projectName,e.manager());
+        }
+
     }
 
 }

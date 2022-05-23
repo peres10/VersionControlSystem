@@ -13,4 +13,8 @@ public interface VersionControlSystem {
     void createProject(String pmUsername, String typeOfProject, String projectName, Set<String> keywords, String nameOfCompanyOrConfidentialityLevel) throws ProjectTypeUnknownException, ProjectManagerNotExistException, ProjectNameAlreadyExistsException, ConfidetialityLevelHigherThanManagerException;
 
     Iterator<Project> listAllProjects();
+
+    void checkProject(String projectName, String pmUsername) throws ProjectManagerNotExistException, ProjectNameNotExistException, ProjectManagedByOtherUserException;
+
+    String addMemberToTeam(String projectName, String user);
 }
