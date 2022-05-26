@@ -17,7 +17,7 @@ public abstract class AbstractUser implements User {
         this.clearanceLevel = clearanceLevel;
         projectsWorking=new ArrayList<>();
     }
-    /aaaaaaa
+    ///
     @Override
     public String getName(){
         return username;
