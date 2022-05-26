@@ -276,6 +276,38 @@ public class Main {
 
     }
 
+    private static void artefactsCommand(Scanner in, VersionControlSystem vSystem){
+        String username = in.next().trim();
+        String projectName = in.nextLine().trim();
+        String dateString = in.nextLine();
+        int numberOfArtefacts = in.nextInt();
+
+        List<String []> artefacts = new ArrayList<String[]>();
+        // [0]=name,[1]=conf level,[2]=descrption
+        while(artefacts.size()<numberOfArtefacts){
+            String name = in.next().trim();
+            String confidentiality = in.next().trim();
+            String description = in.nextLine().trim();
+            artefacts.add(new String[]{name, confidentiality, description});
+        }
+
+        try{
+            vSystem.checkArtefacts(projectName,username);
+            System.out.println(Feedback.HEADER_ARTEFACTS.toString());
+            for(String[] artefact : artefacts) {
+                System.out.printf(Feedback.ARTEFACTS_FORMAT.toString(),artefact[0],vSystem.addArtefact(projectName,artefact));
+            }
+        } catch(UserNotExistException e){
+            System.out.println();
+        } catch(ProjectNameNotExistException){
+            System.out.println();
+        } catch(UserNotInTeamException e){
+            System.out.println();
+        }
+
+
+    }
+
 
 
 }
