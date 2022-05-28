@@ -1,9 +1,6 @@
 package vcs;
 
-import vcs.userPositions.ProjectManager;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public abstract class AbstractUser implements User {
     private String username;

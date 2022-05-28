@@ -111,6 +111,26 @@ public class VersionControlSystemClass implements VersionControlSystem {
         return ("added to the team");
     }
 
+    @Override
+    public void checkArtefacts(String projectName, String username) throws UserNotExistException, ProjectNameNotExistException, UserNotInTeamException {
+        if(!users.containsKey(username))
+            throw new UserNotExistException();
+        if(!projects.containsKey(projectName))
+            throw new ProjectNameNotExistException();
+        if(!((InhouseProject)(projects.get(projectName))).hasMember(users.get(username)))
+            throw new UserNotInTeamException();
+    }
+
+    @Override
+    public String addArtefact(String projectName,String username,String date, String[] artefact) {
+        if(((InhouseProject)(projects.get(projectName))).hasArtefact(artefact[0]))
+            return "already in the project";
+        if((((InhouseProject) (projects.get(projectName))).getLevel() < Integer.parseInt(artefact[1])))
+            return "exceeds project confidentiality level";
+        ((InhouseProject)(projects.get(projectName))).addArtefacts(artefact,users.get(username));
+            return "added to the project";
+    }
+
 
     //private methods
     private void createInhouseProject(String projectName,String pmUserName,Set<String> keywords,int confidentialityLevel) throws ConfidetialityLevelHigherThanManagerException {
@@ -128,4 +148,10 @@ public class VersionControlSystemClass implements VersionControlSystem {
         projects.put(projectName,project);
         pmManager.addManagingProject(project);
     }
+
+	@Override
+	public Project getProjectDetails(String projectName) throws ProjectNameNotExistException, ProjectIsOutsourcedException{
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

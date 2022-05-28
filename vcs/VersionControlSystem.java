@@ -17,4 +17,10 @@ public interface VersionControlSystem {
     void checkProject(String projectName, String pmUsername) throws ProjectManagerNotExistException, ProjectNameNotExistException, ProjectManagedByOtherUserException;
 
     String addMemberToTeam(String projectName, String user);
+
+    void checkArtefacts(String projectName, String username) throws  UserNotExistException,ProjectNameNotExistException,UserNotInTeamException;
+
+    String addArtefact(String projectName, String username,String date ,String[] artefact);
+
+	Project getProjectDetails(String projectName) throws ProjectNameNotExistException, ProjectIsOutsourcedException;
 }

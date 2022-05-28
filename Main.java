@@ -1,16 +1,10 @@
 import vcs.*;
 import vcs.exceptions.*;
-import vcs.typesOfProjects.InhouseProject;
-import vcs.typesOfProjects.InhouseProjectClass;
-import vcs.typesOfProjects.OutsourcedProject;
-import vcs.typesOfProjects.OutsourcedProjectClass;
+import vcs.typesOfProjects.*;
 import vcs.userPositions.*;
-
-
 import java.util.*;
 
 public class Main {
-    //private static final String EXIT_MSG = "Bye!";
 
     private enum Feedback {
         EXIT_MSG("Bye!"),
@@ -26,7 +20,13 @@ public class Main {
         PROJECT_LIST_FORMAT_INHOUSE("in-house %s is managed by %s [%d, %d, %d, %d]\n"),
         PROJECT_LIST_FORMAT_OUTSOURCED("outsourced %s is managed by %s and developed by %s\n"),
         HEADER_ADD_TEAM("Latest team members:"),
-        ADD_TO_TEAM_FORMAT("%s: %s.\n");
+        ADD_TO_TEAM_FORMAT("%s: %s.\n"),
+        HEADER_ARTEFACTS("Latest project artefacts:"),
+        ARTEFACTS_FORMAT("%s: %s.\n"),
+    	PROJECT_DETAILS_HEADER("%s [%d] managed by %s [%d]:\n"),
+    	PROJECT_DETAILS_MEMBERS("%s [%d]\n"),
+    	PROJECT_DETAILS_ARTEFACTS("%s [%d]\n"),
+    	PROJECT_DETAILS_REVISIONS("revision %d %s %s %s\n");
 
 
         private final String msg;
@@ -44,12 +44,15 @@ public class Main {
         UNKNOWN_COMMAND("Unknown command. Type help to see available commands.\n"),
         UNKNOWN_JOB_POSITION("Unknown job position."),
         USER_ALREADY_EXISTS("User %s already exists.\n"),
+        USER_NOT_EXIST("User %s doest not exist.\n"),
         UNKNOWN_PROJECT_TYPE("Unknown project type."),
         PROJECT_MANAGER_DONT_EXISTS("Project manager %s does not exist.\n"),
         PROJECT_ALREADY_EXISTS("%s project already exists.\n"),
         PROJECT_HAS_HIGHER_CONFIDENTIALITY_THAN_PM("Project manager %s has clearance level %d.\n"),
-        PROJECT_DONT_EXIST("%s project does not exist.\n"),
-        PROJECT_MANAGED_BY_OTHER_USER("%s is managed by %s.\n");
+        PROJECT_NOT_EXIST("%s project does not exist.\n"),
+        PROJECT_MANAGED_BY_OTHER_USER("%s is managed by %s.\n"),
+        USER_NOT_IN_TEAM("User %s does not belong to the team of %s.\n"),
+    	PROJECT_IS_OUTSOURCED("%s is an outsourced project.\n");
 
         private final String msg;
 
@@ -128,20 +131,28 @@ public class Main {
                     teamCommand(in,vSystem);
                     break;
                 case ARTEFACTS:
+                	artefactsCommand(in, vSystem);
                     break;
                 case PROJECT:
-                    break;
+                    projectCommand(in,vSystem);
+                	break;
                 case REVISION:
+                	revisionCommand(in,vSystem);
                     break;
                 case MANAGES:
+                	managesCommand(in,vSystem);
                     break;
                 case KEYWORD:
+                	keywordCommand(in,vSystem);
                     break;
                 case CONFIDENTIALITY:
-                    break;
+                	confidentialityCommand(in,vSystem);
+                	break;
                 case WORKAHOLICS:
-                    break;
+                	workaholicsCommand(in,vSystem);
+                	break;
                 case COMMON:
+                	commonCommand(in,vSystem);
                     break;
                 case HELP:
                     helpCommand();
@@ -268,12 +279,11 @@ public class Main {
             System.out.printf(Error.PROJECT_MANAGER_DONT_EXISTS.toString(),pmUsername);
         }
         catch(ProjectNameNotExistException e){
-            System.out.printf(Error.PROJECT_DONT_EXIST.toString(),projectName);
+            System.out.printf(Error.PROJECT_NOT_EXIST.toString(),projectName);
         }
         catch(ProjectManagedByOtherUserException e){
             System.out.printf(Error.PROJECT_MANAGED_BY_OTHER_USER.toString(),projectName,e.manager());
         }
-
     }
 
     private static void artefactsCommand(Scanner in, VersionControlSystem vSystem){
@@ -295,18 +305,89 @@ public class Main {
             vSystem.checkArtefacts(projectName,username);
             System.out.println(Feedback.HEADER_ARTEFACTS.toString());
             for(String[] artefact : artefacts) {
-                System.out.printf(Feedback.ARTEFACTS_FORMAT.toString(),artefact[0],vSystem.addArtefact(projectName,artefact));
+                System.out.printf(Feedback.ARTEFACTS_FORMAT.toString(),artefact[0],vSystem.addArtefact(projectName,username,dateString,artefact));
             }
         } catch(UserNotExistException e){
-            System.out.println();
-        } catch(ProjectNameNotExistException){
-            System.out.println();
+            System.out.printf(Error.USER_NOT_EXIST.toString(),username);
+        } catch(ProjectNameNotExistException e){
+            System.out.printf(Error.PROJECT_NOT_EXIST.toString(),username);
         } catch(UserNotInTeamException e){
-            System.out.println();
+            System.out.printf(Error.USER_NOT_IN_TEAM.toString(),username,projectName);
         }
-
-
     }
+
+	private static void projectCommand(Scanner in, VersionControlSystem vSystem) {
+		String projectName = in.nextLine();
+		Project project;
+		Iterator<User> membersIt;
+		Iterator<Artefact> artefactsIt;
+		Iterator<Revision> revisionsIt;
+		User member;
+		Artefact artefact;
+		Revision revision;
+		int indexOfRevision, i = 0;
+		
+		try {
+			project = vSystem.getProjectDetails(projectName);
+			membersIt = ((InhouseProject)project).getMemberList();
+			artefactsIt = ((InhouseProject)project).getArtefactList();
+			
+			System.out.printf(Feedback.PROJECT_DETAILS_HEADER.toString(), project.getName(), ((InhouseProject)project).getLevel(), project.getManagerName(), project.getProjectManager().getClearanceLevel());
+			while(membersIt.hasNext()) {
+				member = membersIt.next();
+				System.out.printf(Feedback.PROJECT_DETAILS_MEMBERS.toString(), member.getName(), member.getClearanceLevel());
+			}
+			while(artefactsIt.hasNext()) {
+				artefact = artefactsIt.next();
+				revisionsIt = artefact.getRevisionsListDescending();
+				indexOfRevision = artefact.getRevisionsSize();
+				System.out.printf(Feedback.PROJECT_DETAILS_ARTEFACTS.toString(), artefact.getName(), artefact.getLevel());
+				while(revisionsIt.hasNext()) {
+					revision = revisionsIt.next();
+					System.out.printf(Feedback.PROJECT_DETAILS_REVISIONS.toString(), indexOfRevision-i, revision.getName(), revision.getDate(), revision.getComment());
+					i++;
+				}
+			}
+		}
+		catch(ProjectNameNotExistException e){
+            System.out.printf(Error.PROJECT_NOT_EXIST.toString(),projectName);
+        }
+		catch(ProjectIsOutsourcedException e){
+            System.out.printf(Error.PROJECT_IS_OUTSOURCED.toString(),projectName);
+		}		
+		
+		
+	}
+
+	private static void revisionCommand(Scanner in, VersionControlSystem vSystem) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void managesCommand(Scanner in, VersionControlSystem vSystem) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void keywordCommand(Scanner in, VersionControlSystem vSystem) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void confidentialityCommand(Scanner in, VersionControlSystem vSystem) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void workaholicsCommand(Scanner in, VersionControlSystem vSystem) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void commonCommand(Scanner in, VersionControlSystem vSystem) {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 

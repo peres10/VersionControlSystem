@@ -2,9 +2,6 @@ package vcs.userPositions;
 
 import vcs.AbstractUser;
 import vcs.Project;
-import vcs.typesOfProjects.InhouseProject;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 

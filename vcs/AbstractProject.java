@@ -2,13 +2,12 @@ package vcs;
 
 import vcs.userPositions.ProjectManager;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 public abstract class AbstractProject implements Project {
 
     String projectName;
-    ProjectManager pm;
+    protected ProjectManager pm;
     Set<String> keywords;
     String typeOfProject;
 
@@ -26,5 +25,9 @@ public abstract class AbstractProject implements Project {
 
     public String getManagerName(){
         return pm.getName();
+    }
+    
+    public User getProjectManager() {
+    	return pm;
     }
 }
