@@ -2,7 +2,10 @@ package vcs.userPositions;
 
 import vcs.AbstractUser;
 import vcs.Project;
+import vcs.User;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class ProjectManagerClass extends AbstractUser implements ProjectManager {
@@ -49,4 +52,9 @@ public class ProjectManagerClass extends AbstractUser implements ProjectManager 
     public boolean managesDeveloper(SoftwareDeveloper developer){
         return developersManaged.contains(developer);
     }
+
+	@Override
+	public Iterator<SoftwareDeveloper> listUsersManaged() {
+		return developersManaged.iterator();
+	}
 }

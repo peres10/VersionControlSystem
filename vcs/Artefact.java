@@ -10,7 +10,9 @@ public interface Artefact {
 	
 	Iterator<Revision> getRevisionsListDescending();
 
-	int getRevisionsSize();
+	void addRevision(String projectName, String username, LocalDate date, String comment);
 
-	void addRevision(String username, LocalDate date, String comment);
+	int getNumberOfRevisions();
+
+	Iterator<Revision> getRevisionsList();
 }

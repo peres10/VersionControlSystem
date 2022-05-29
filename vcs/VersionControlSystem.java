@@ -1,6 +1,7 @@
 package vcs;
 
 import vcs.exceptions.*;
+import vcs.userPositions.SoftwareDeveloper;
 
 import java.time.LocalDate;
 import java.util.Iterator;
@@ -25,6 +26,12 @@ public interface VersionControlSystem {
 
 	Project getProjectDetails(String projectName) throws ProjectNameNotExistException, ProjectIsOutsourcedException;
 
-	void addRevisionToArtifactInProject(String username, String projectName, String artefactName, LocalDate date,
-			String comment) throws UserNotExistException, ProjectNameNotExistException, UserNotInTeamException, ArtefactNotExistInProjectException; 
+	int addRevisionToArtifactInProject(String username, String projectName, String artefactName, LocalDate date,
+			String comment) throws UserNotExistException, ProjectNameNotExistException, UserNotInTeamException, ArtefactNotExistInProjectException;
+
+	void checkProjectManager(String username) throws UserNotExistException, ProjectManagerNotExistException;
+
+	Iterator<SoftwareDeveloper> getUsersManagedByPM(String username);
+
+	Iterator<Revision> getUserRevisions(User managedUser); 
 }

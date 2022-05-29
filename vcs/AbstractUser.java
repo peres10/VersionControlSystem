@@ -2,6 +2,8 @@ package vcs;
 
 import java.util.*;
 
+import vcs.typesOfProjects.InhouseProject;
+
 public abstract class AbstractUser implements User {
     private String username;
     //private String jobPosition;
@@ -19,10 +21,12 @@ public abstract class AbstractUser implements User {
     public String getName(){
         return username;
     }
+    
     @Override
     public int getNumOfProjectsWorking(){
         return projectsWorking.size();
     }
+    
     @Override
     public int getClearanceLevel(){
         return clearanceLevel;
@@ -32,5 +36,9 @@ public abstract class AbstractUser implements User {
     public void addProject(Project project){
         projectsWorking.add(project);
     }
+
+	public Iterator<Project> listProjectsWorking(){
+		return projectsWorking.iterator();
+	}
 
 }

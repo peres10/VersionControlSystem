@@ -24,11 +24,15 @@ public class Main {
         HEADER_ADD_TEAM("Latest team members:"),
         ADD_TO_TEAM_FORMAT("%s: %s.\n"),
         HEADER_ARTEFACTS("Latest project artefacts:"),
+        HEADER_PM_MANAGES("Manager %s:\n"),
+        MANAGES_USER_MANAGED("%s\n"),
+        MANAGES_USER_REVISIONS("%s, %s, revision %d, %s, %s\n"),
         ARTEFACTS_FORMAT("%s: %s.\n"),
     	PROJECT_DETAILS_HEADER("%s [%d] managed by %s [%d]:\n"),
     	PROJECT_DETAILS_MEMBERS("%s [%d]\n"),
     	PROJECT_DETAILS_ARTEFACTS("%s [%d]\n"),
-    	PROJECT_DETAILS_REVISIONS("revision %d %s %s %s\n");
+    	PROJECT_DETAILS_REVISIONS("revision %d %s %s %s\n"), 
+    	REVISION_SUBMITED("Revision %d of artefact %s was submited.\n");
 
         private final String msg;
 
@@ -330,7 +334,6 @@ public class Main {
 		User member;
 		Artefact artefact;
 		Revision revision;
-		int indexOfRevision, i = 0;
 		
 		try {
 			project = vSystem.getProjectDetails(projectName);
@@ -345,12 +348,10 @@ public class Main {
 			while(artefactsIt.hasNext()) {
 				artefact = artefactsIt.next();
 				revisionsIt = artefact.getRevisionsListDescending();
-				indexOfRevision = artefact.getRevisionsSize();
 				System.out.printf(Feedback.PROJECT_DETAILS_ARTEFACTS.toString(), artefact.getName(), artefact.getLevel());
 				while(revisionsIt.hasNext()) {
 					revision = revisionsIt.next();
-					System.out.printf(Feedback.PROJECT_DETAILS_REVISIONS.toString(), indexOfRevision-i, revision.getName(), revision.getDate(), revision.getComment());
-					i++;
+					System.out.printf(Feedback.PROJECT_DETAILS_REVISIONS.toString(), revision.getRevisionNumber(), revision.getName(), revision.getDate(), revision.getComment());
 				}
 			}
 		}
@@ -374,7 +375,8 @@ public class Main {
         LocalDate date = LocalDate.parse(dateSplitted[0] + '-' + dateSplitted[1] + '-' + dateSplitted[2]);
         
         try {
-        	vSystem.addRevisionToArtifactInProject(username, projectName, artefactName, date, comment);
+        	int revisionNumber = vSystem.addRevisionToArtifactInProject(username, projectName, artefactName, date, comment);
+        	System.out.printf(Feedback.REVISION_SUBMITED.toString(), revisionNumber, artefactName);
         }
         catch(UserNotExistException e) {
 	        System.out.printf(Error.USER_NOT_EXIST.toString(),username);
@@ -392,8 +394,32 @@ public class Main {
 	}
 
 	private static void managesCommand(Scanner in, VersionControlSystem vSystem) {
-		// TODO Auto-generated method stub
-		
+		String username = in.nextLine().trim();
+		Iterator<SoftwareDeveloper> managedUsersIt;
+		Iterator<Revision> revisionsOfUserIt;
+		User managedUser;
+		Revision revision;
+		try {
+			vSystem.checkProjectManager(username);
+			managedUsersIt = vSystem.getUsersManagedByPM(username);
+			
+			System.out.printf(Feedback.HEADER_PM_MANAGES.toString(), username);
+			while(managedUsersIt.hasNext()) {
+				managedUser = (User)managedUsersIt.next();
+				System.out.printf(Feedback.MANAGES_USER_MANAGED.toString(), managedUser.getName());
+				revisionsOfUserIt = vSystem.getUserRevisions(managedUser);
+				while(revisionsOfUserIt.hasNext()) {
+					revision = revisionsOfUserIt.next();
+					System.out.printf(Feedback.MANAGES_USER_REVISIONS.toString(), revision.getProjectName(), revision.getArtefactName(), revision.getRevisionNumber(), revision.getDate(), revision.getComment());
+				}
+			}
+		}
+		catch(UserNotExistException e) {
+	        System.out.printf(Error.USER_NOT_EXIST.toString(),username);
+	    } 
+		catch(ProjectManagerNotExistException e){
+	        System.out.printf(Error.USER_NOT_EXIST.toString(),username);
+        }
 	}
 
 	private static void keywordCommand(Scanner in, VersionControlSystem vSystem) {

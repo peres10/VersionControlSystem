@@ -9,14 +9,16 @@ public class ArtefactClass implements Artefact{
     private int confidentialityLevel;
     private String description;
     private List<Revision> revisions;
-
-    public ArtefactClass(String artefactName, int confidentialityLevel, String description, User owner, LocalDate date){
+    private int numberOfRevisions;
+    
+    public ArtefactClass(String projectName, String artefactName, int confidentialityLevel, String description, User owner, LocalDate date){
     	this.revisions=new ArrayList<>();
-        revisions.add(new RevisionClass(owner.getName(), description, date));
+    	this.numberOfRevisions = 1;
+    	revisions.add(new RevisionClass(projectName, artefactName, owner.getName(), description, date, this.numberOfRevisions));
+    	this.numberOfRevisions++;
     	this.artefactName=artefactName;
         this.confidentialityLevel=confidentialityLevel;
-        this.description=description;
-        
+        this.description=description;  
     }
 
     @Override
@@ -38,12 +40,18 @@ public class ArtefactClass implements Artefact{
 	}
 
 	@Override
-	public int getRevisionsSize() {
-		return revisions.size();
+	public void addRevision(String projectName, String username, LocalDate date, String comment) {
+		revisions.add(new RevisionClass(projectName, this.artefactName, username, comment, date, this.numberOfRevisions));
+		numberOfRevisions++;
 	}
 
 	@Override
-	public void addRevision(String username, LocalDate date, String comment) {
-		revisions.add(new RevisionClass(username, comment, date));
+	public int getNumberOfRevisions() {
+		return this.numberOfRevisions;
+	}
+
+	@Override
+	public Iterator<Revision> getRevisionsList() {
+		return revisions.iterator();
 	}
 }

@@ -66,7 +66,7 @@ public class InhouseProjectClass extends AbstractProject implements InhouseProje
 
     @Override
     public void addArtefacts(String[] artefact, User owner, LocalDate date) {
-        artefacts.add(new ArtefactClass(artefact[0],Integer.parseInt(artefact[1]),artefact[2],owner, date));
+        artefacts.add(new ArtefactClass(super.getName(), artefact[0],Integer.parseInt(artefact[1]),artefact[2],owner, date));
     }
 
 	@Override
@@ -83,7 +83,7 @@ public class InhouseProjectClass extends AbstractProject implements InhouseProje
 	public void addRevisionInArtefact(String artefactName, String username, LocalDate date, String comment) {
 		for(Artefact a : artefacts) {
             if (a.getName().equals(artefactName))
-                a.addRevision(username, date, comment);
+                a.addRevision(super.getName(), username, date, comment);
         }
 	}
 	

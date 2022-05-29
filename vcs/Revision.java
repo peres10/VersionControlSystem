@@ -10,4 +10,9 @@ public interface Revision {
 
 	String getComment();
 	
+	int getRevisionNumber();
+
+	String getProjectName();
+
+	String getArtefactName();
 }

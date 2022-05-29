@@ -158,9 +158,54 @@ public class VersionControlSystemClass implements VersionControlSystem {
 	}
 
 	@Override
-	public void addRevisionToArtifactInProject(String username, String projectName, String artefactName, LocalDate date,
-			String comment) throws UserNotExistException, ProjectNameNotExistException, UserNotInTeamException, ArtefactNotExistInProjectException{
-		// TODO Auto-generated method stub
-		
+	public int addRevisionToArtifactInProject(String username, String projectName, String artefactName, LocalDate date, String comment) throws UserNotExistException, ProjectNameNotExistException, UserNotInTeamException, ArtefactNotExistInProjectException{
+		Artefact artefact = null;
+		return artefact.getNumberOfRevisions();
 	}
+
+	@Override
+	public void checkProjectManager(String username) throws UserNotExistException, ProjectManagerNotExistException{
+		if(!users.containsKey(username))
+            throw new UserNotExistException();
+		if(!users.containsKey(username) || !((users.get(username) instanceof ProjectManager)))
+            throw new ProjectManagerNotExistException();
+        		
+	}
+
+	@Override
+	public Iterator<SoftwareDeveloper> getUsersManagedByPM(String username) {
+		ProjectManager projectManager = (ProjectManager)users.get(username);
+		return projectManager.listUsersManaged();
+	}
+
+	@Override
+	public Iterator<Revision> getUserRevisions(User managedUser) {
+		Iterator<Project> userProjectsIt = managedUser.listProjectsWorking();
+		Iterator<Artefact> artefactsInProjectIt;
+		Iterator<Revision> revisionsIt;
+		InhouseProject project;
+		Artefact artefact;
+		Revision revision;
+		List<Revision> userRevisions = new ArrayList<>();
+		
+		while(userProjectsIt.hasNext()) {
+			project = (InhouseProject)userProjectsIt.next();
+			artefactsInProjectIt = project.getArtefactList();
+			
+			while(artefactsInProjectIt.hasNext()) {
+				artefact = artefactsInProjectIt.next();
+				revisionsIt = artefact.getRevisionsList();
+				
+				while(revisionsIt.hasNext()) {
+					revision = revisionsIt.next();
+					
+					if(revision.getName().equals(managedUser.getName()))
+						userRevisions.add(revision);
+				}
+			}
+		}
+		return userRevisions.iterator();
+	}
+
+	
 }
