@@ -2,6 +2,7 @@ package vcs;
 
 import vcs.exceptions.*;
 
+import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -20,7 +21,10 @@ public interface VersionControlSystem {
 
     void checkArtefacts(String projectName, String username) throws  UserNotExistException,ProjectNameNotExistException,UserNotInTeamException;
 
-    String addArtefact(String projectName, String username,String date ,String[] artefact);
+    String addArtefact(String projectName, String username, LocalDate date ,String[] artefact);
 
 	Project getProjectDetails(String projectName) throws ProjectNameNotExistException, ProjectIsOutsourcedException;
+
+	void addRevisionToArtifactInProject(String username, String projectName, String artefactName, LocalDate date,
+			String comment) throws UserNotExistException, ProjectNameNotExistException, UserNotInTeamException, ArtefactNotExistInProjectException; 
 }

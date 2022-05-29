@@ -3,6 +3,8 @@ package vcs;
 import vcs.exceptions.*;
 import vcs.typesOfProjects.*;
 import vcs.userPositions.*;
+
+import java.time.LocalDate;
 import java.util.*;
 
 public class VersionControlSystemClass implements VersionControlSystem {
@@ -122,12 +124,12 @@ public class VersionControlSystemClass implements VersionControlSystem {
     }
 
     @Override
-    public String addArtefact(String projectName,String username,String date, String[] artefact) {
+    public String addArtefact(String projectName,String username,LocalDate date, String[] artefact) {
         if(((InhouseProject)(projects.get(projectName))).hasArtefact(artefact[0]))
             return "already in the project";
         if((((InhouseProject) (projects.get(projectName))).getLevel() < Integer.parseInt(artefact[1])))
             return "exceeds project confidentiality level";
-        ((InhouseProject)(projects.get(projectName))).addArtefacts(artefact,users.get(username));
+        ((InhouseProject)(projects.get(projectName))).addArtefacts(artefact, users.get(username), date);
             return "added to the project";
     }
 
@@ -153,5 +155,12 @@ public class VersionControlSystemClass implements VersionControlSystem {
 	public Project getProjectDetails(String projectName) throws ProjectNameNotExistException, ProjectIsOutsourcedException{
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void addRevisionToArtifactInProject(String username, String projectName, String artefactName, LocalDate date,
+			String comment) throws UserNotExistException, ProjectNameNotExistException, UserNotInTeamException, ArtefactNotExistInProjectException{
+		// TODO Auto-generated method stub
+		
 	}
 }

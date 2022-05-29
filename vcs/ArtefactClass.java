@@ -1,25 +1,27 @@
 package vcs;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class ArtefactClass implements Artefact{
-    private User owner;
-    private String name;
+    private String ownerName;
+    private String artefactName;
     private int confidentialityLevel;
     private String description;
     private List<Revision> revisions;
 
-    public ArtefactClass(String artefactName, int confidentialityLevel, String description, User owner){
-        this.name=artefactName;
+    public ArtefactClass(String artefactName, int confidentialityLevel, String description, User owner, LocalDate date){
+    	this.revisions=new ArrayList<>();
+        revisions.add(new RevisionClass(owner.getName(), description, date));
+    	this.artefactName=artefactName;
         this.confidentialityLevel=confidentialityLevel;
         this.description=description;
-        this.owner=owner;
-        this.revisions=new ArrayList<>();
+        
     }
 
     @Override
     public String getName() {
-        return name;
+        return artefactName;
     }
 
 	@Override
@@ -38,5 +40,10 @@ public class ArtefactClass implements Artefact{
 	@Override
 	public int getRevisionsSize() {
 		return revisions.size();
+	}
+
+	@Override
+	public void addRevision(String username, LocalDate date, String comment) {
+		revisions.add(new RevisionClass(username, comment, date));
 	}
 }

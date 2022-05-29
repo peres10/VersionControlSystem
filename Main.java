@@ -2,6 +2,8 @@ import vcs.*;
 import vcs.exceptions.*;
 import vcs.typesOfProjects.*;
 import vcs.userPositions.*;
+
+import java.time.LocalDate;
 import java.util.*;
 
 public class Main {
@@ -28,7 +30,6 @@ public class Main {
     	PROJECT_DETAILS_ARTEFACTS("%s [%d]\n"),
     	PROJECT_DETAILS_REVISIONS("revision %d %s %s %s\n");
 
-
         private final String msg;
 
         Feedback(String msg) {
@@ -52,7 +53,8 @@ public class Main {
         PROJECT_NOT_EXIST("%s project does not exist.\n"),
         PROJECT_MANAGED_BY_OTHER_USER("%s is managed by %s.\n"),
         USER_NOT_IN_TEAM("User %s does not belong to the team of %s.\n"),
-    	PROJECT_IS_OUTSOURCED("%s is an outsourced project.\n");
+    	PROJECT_IS_OUTSOURCED("%s is an outsourced project.\n"),
+    	ARTEFACT_NOT_EXIST_IN_PROJECT("%s does not exist in project.\n");
 
         private final String msg;
 
@@ -66,7 +68,6 @@ public class Main {
     }
 
     private enum Command {
-
         REGISTER("adds a new user"),
         USERS("lists all registered users"),
         CREATE("creates a new project"),
@@ -291,9 +292,10 @@ public class Main {
         String projectName = in.nextLine().trim();
         String dateString = in.nextLine();
         int numberOfArtefacts = in.nextInt();
-
+        String[] dateSplitted = dateString.split("-", 3);
+        LocalDate date = LocalDate.parse(dateSplitted[0] + '-' + dateSplitted[1] + '-' + dateSplitted[2]);
+        
         List<String []> artefacts = new ArrayList<String[]>();
-        // [0]=name,[1]=conf level,[2]=descrption
         while(artefacts.size()<numberOfArtefacts){
             String name = in.next().trim();
             String confidentiality = in.next().trim();
@@ -305,19 +307,22 @@ public class Main {
             vSystem.checkArtefacts(projectName,username);
             System.out.println(Feedback.HEADER_ARTEFACTS.toString());
             for(String[] artefact : artefacts) {
-                System.out.printf(Feedback.ARTEFACTS_FORMAT.toString(),artefact[0],vSystem.addArtefact(projectName,username,dateString,artefact));
+                System.out.printf(Feedback.ARTEFACTS_FORMAT.toString(),artefact[0],vSystem.addArtefact(projectName,username,date,artefact));
             }
-        } catch(UserNotExistException e){
+        } 
+        catch(UserNotExistException e){
             System.out.printf(Error.USER_NOT_EXIST.toString(),username);
-        } catch(ProjectNameNotExistException e){
+        } 
+        catch(ProjectNameNotExistException e){
             System.out.printf(Error.PROJECT_NOT_EXIST.toString(),username);
-        } catch(UserNotInTeamException e){
+        } 
+        catch(UserNotInTeamException e){
             System.out.printf(Error.USER_NOT_IN_TEAM.toString(),username,projectName);
         }
     }
 
 	private static void projectCommand(Scanner in, VersionControlSystem vSystem) {
-		String projectName = in.nextLine();
+		String projectName = in.nextLine().trim();
 		Project project;
 		Iterator<User> membersIt;
 		Iterator<Artefact> artefactsIt;
@@ -360,7 +365,29 @@ public class Main {
 	}
 
 	private static void revisionCommand(Scanner in, VersionControlSystem vSystem) {
-		// TODO Auto-generated method stub
+		String username = in.next().trim();
+		String projectName = in.nextLine().trim();
+		String artefactName = in.next().trim();
+		String dateString = in.next().trim();
+		String comment = in.nextLine().trim();
+		String[] dateSplitted = dateString.split("-", 3);
+        LocalDate date = LocalDate.parse(dateSplitted[0] + '-' + dateSplitted[1] + '-' + dateSplitted[2]);
+        
+        try {
+        	vSystem.addRevisionToArtifactInProject(username, projectName, artefactName, date, comment);
+        }
+        catch(UserNotExistException e) {
+	        System.out.printf(Error.USER_NOT_EXIST.toString(),username);
+	    } 
+        catch(ProjectNameNotExistException e) {
+	        System.out.printf(Error.PROJECT_NOT_EXIST.toString(),username);
+	    } 
+        catch(UserNotInTeamException e) {
+	        System.out.printf(Error.USER_NOT_IN_TEAM.toString(),username,projectName);
+	    }
+        catch(ArtefactNotExistInProjectException e) {
+        	System.out.printf(Error.ARTEFACT_NOT_EXIST_IN_PROJECT.toString(), artefactName);
+        }
 		
 	}
 

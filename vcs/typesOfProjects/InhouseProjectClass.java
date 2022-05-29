@@ -6,6 +6,7 @@ import vcs.ArtefactClass;
 import vcs.User;
 import vcs.userPositions.ProjectManager;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -64,8 +65,8 @@ public class InhouseProjectClass extends AbstractProject implements InhouseProje
     }
 
     @Override
-    public void addArtefacts(String[] artefact,User owner) {
-        artefacts.add(new ArtefactClass(artefact[0],Integer.parseInt(artefact[1]),artefact[2],owner));
+    public void addArtefacts(String[] artefact, User owner, LocalDate date) {
+        artefacts.add(new ArtefactClass(artefact[0],Integer.parseInt(artefact[1]),artefact[2],owner, date));
     }
 
 	@Override
@@ -77,4 +78,14 @@ public class InhouseProjectClass extends AbstractProject implements InhouseProje
 	public Iterator<Artefact> getArtefactList() {
 		return artefacts.iterator();
 	}
+
+	@Override
+	public void addRevisionInArtefact(String artefactName, String username, LocalDate date, String comment) {
+		for(Artefact a : artefacts) {
+            if (a.getName().equals(artefactName))
+                a.addRevision(username, date, comment);
+        }
+	}
+	
+	
 }

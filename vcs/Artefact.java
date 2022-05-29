@@ -1,5 +1,6 @@
 package vcs;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public interface Artefact {
@@ -10,4 +11,6 @@ public interface Artefact {
 	Iterator<Revision> getRevisionsListDescending();
 
 	int getRevisionsSize();
+
+	void addRevision(String username, LocalDate date, String comment);
 }
